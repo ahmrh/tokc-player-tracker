@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Old King's Crown — Companion Tracker</title>
+<!--
+═══════════════════════════════════════════════════════════
+  TACTIC IMAGE NAMING CONVENTION
+  Place images in an "images/" folder next to this HTML file.
+
+  nobility-tactic-1.png  → School of the Stones
+  nobility-tactic-2.png  → Royal Seal
+  nobility-tactic-3.png  → Witch Trial
+  nobility-tactic-4.png  → Martial Law
+
+  gathering-tactic-1.png → School of the Stars
+  gathering-tactic-2.png → Out Beyond the Lights
+  gathering-tactic-3.png → Moonlit Foragers
+  gathering-tactic-4.png → Ritual Sacrifice
+
+  clans-tactic-1.png     → School of the Storms
+  clans-tactic-2.png     → Sea Lanes
+  clans-tactic-3.png     → Salt Toughness
+  clans-tactic-4.png     → River Runner
+
+  uprising-tactic-1.png  → School of the Streets
+  uprising-tactic-2.png  → False Orders
+  uprising-tactic-3.png  → Safe Houses
+  uprising-tactic-4.png  → Night Raids
+═══════════════════════════════════════════════════════════
+-->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0b08;
+  --surface: #141109;
+  --border: #3a3020;
+  --gold: #c9a84c;
+  --gold-dim: #7a6430;
+  --text: #e8dfc8;
+  --text-dim: #8a7f6a;
+  --spring: #6aaa5a;
+  --summer: #d4a030;
+  --autumn: #c07830;
+  --winter: #6090c0;
+  --red: #c04a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Text',Georgia,serif;min-height:100vh}
+
+/* ─── SETUP ─────────────────────────────── */
+#setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;animation:fadeIn .5s ease}
+.crown-title{text-align:center;margin-bottom:2rem}
+.crown-title h1{font-family:'Cinzel',serif;font-size:clamp(1.2rem,4vw,2.2rem);color:var(--gold);letter-spacing:.1em;text-shadow:0 0 30px rgba(201,168,76,.3)}
+.crown-title p{color:var(--text-dim);font-style:italic;margin-top:.3rem}
+.divider-line{width:100%;max-width:420px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);margin:1.2rem auto}
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.5rem;width:100%;max-width:480px}
+.slabel{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:.7rem}
+.btn-group{display:flex;gap:.4rem;margin-bottom:1.5rem}
+.tbtn{flex:1;padding:.5rem;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:'Cinzel',serif;font-size:.82rem;cursor:pointer;border-radius:2px;transition:all .2s;white-space:nowrap}
+.tbtn:hover{border-color:var(--gold-dim);color:var(--text)}
+.tbtn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07)}
+.player-setup-list{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.5rem}
+.player-setup-row{display:flex;align-items:center;gap:.8rem}
+.pnum-label{font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-dim);width:56px;flex-shrink:0}
+.faction-select{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Crimson Text',serif;font-size:1rem;padding:.35rem .5rem;border-radius:2px;cursor:pointer;outline:none;transition:border-color .2s}
+.faction-select:focus{border-color:var(--gold-dim)}
+.start-btn{width:100%;padding:.8rem;background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .25s}
+.start-btn:hover{border-color:var(--gold);box-shadow:0 0 20px rgba(201,168,76,.15)}
+
+/* ─── GAME SCREEN ───────────────────────── */
+#game-screen{display:none;min-height:100vh}
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.game-header h2{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.15em;color:var(--gold)}
+.newgame-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.1em;padding:.3rem .6rem;cursor:pointer;border-radius:2px;transition:all .2s}
+.newgame-btn:hover{border-color:var(--gold-dim);color:var(--text)}
+.game-body{padding:.8rem;max-width:1400px;margin:0 auto}
+
+/* ─── TRACK BAR ─────────────────────────── */
+.track-bar{display:flex;gap:.8rem;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.75rem 1rem;margin-bottom:.8rem;flex-wrap:wrap}
+.tblock{display:flex;flex-direction:column;gap:.22rem}
+.track-lbl{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.12em;color:var(--text-dim);text-transform:uppercase}
+.tcontrols{display:flex;align-items:center;gap:.4rem}
+.tnav{width:24px;height:24px;background:transparent;border:1px solid var(--border);color:var(--text-dim);cursor:pointer;border-radius:2px;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.tnav:hover:not([disabled]){border-color:var(--gold-dim);color:var(--text)}
+.tnav[disabled]{opacity:.3;cursor:not-allowed}
+.tval{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--text);min-width:44px;text-align:center}
+.tsep{width:1px;background:var(--border);align-self:stretch;flex-shrink:0;margin:0 .2rem}
+.phase-pills{display:flex;gap:.32rem;flex-wrap:wrap}
+.ppill{padding:.26rem .6rem;border:1px solid var(--border);border-radius:20px;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.1em;color:var(--text-dim);cursor:pointer;transition:all .2s;text-transform:uppercase}
+.ppill:hover{border-color:var(--gold-dim);color:var(--text)}
+.pp-spring{border-color:#6aaa5a;color:#6aaa5a;background:rgba(106,170,90,.08)}
+.pp-summer{border-color:#d4a030;color:#d4a030;background:rgba(212,160,48,.08)}
+.pp-autumn{border-color:#c07830;color:#c07830;background:rgba(192,120,48,.08)}
+.pp-winter{border-color:#6090c0;color:#6090c0;background:rgba(96,144,192,.08)}
+.end-msg{font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);font-style:italic}
+
+/* ─── SECTION ROW ───────────────────────── */
+.section-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem}
+@media(max-width:700px){.section-row{grid-template-columns:1fr}}
+.info-sec{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:.85rem 1rem}
+.isec-title{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between}
+.isec-sub{font-size:.72rem;color:var(--text-dim);font-style:italic;font-family:'Crimson Text',serif;letter-spacing:0}
+
+/* ─── TURN ORDER ────────────────────────── */
+.to-list{display:flex;flex-direction:column;gap:.32rem}
+.to-item{display:flex;align-items:center;gap:.55rem;padding:.35rem .48rem;border:1px solid var(--border);border-radius:2px;background:rgba(0,0,0,.15)}
+.to-pos{font-family:'Cinzel',serif;font-size:.62rem;color:var(--text-dim);width:26px;flex-shrink:0}
+.to-name{flex:1;font-family:'Cinzel',serif;font-size:.76rem;line-height:1.3}
+.to-sub{font-size:.62rem;color:var(--text-dim);font-family:'Crimson Text',serif;font-style:italic}
+.to-btns{display:flex;gap:.2rem}
+.ibtn{width:20px;height:20px;background:transparent;border:1px solid var(--border);color:var(--text-dim);cursor:pointer;border-radius:2px;font-size:.62rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ibtn:hover:not([disabled]){border-color:var(--gold-dim);color:var(--text)}
+.ibtn[disabled]{opacity:.25;cursor:not-allowed}
+.next-order-preview{margin-top:.55rem;font-size:.72rem;color:var(--text-dim);line-height:1.8}
+.next-order-label{font-family:'Cinzel',serif;font-size:.57rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)}
+.apply-btn{width:100%;margin-top:.5rem;padding:.38rem;background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.1em;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase}
+.apply-btn:hover{border-color:var(--gold);box-shadow:0 0 10px rgba(201,168,76,.1)}
+
+/* ─── CLASH REGIONS ─────────────────────── */
+.clash-list{display:flex;flex-direction:column;gap:.32rem}
+.clash-item{display:flex;align-items:center;gap:.55rem;padding:.38rem .5rem;border:1px solid var(--border);border-radius:2px;background:rgba(0,0,0,.15);transition:border-color .2s}
+.clash-item.summer-hi{border-color:rgba(212,160,48,.4)}
+.clash-badge{width:26px;height:26px;border-radius:50%;background:var(--bg);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.68rem;color:var(--gold);flex-shrink:0}
+.clash-rname{flex:1;font-family:'Cinzel',serif;font-size:.78rem;color:var(--text)}
+.clash-note{margin-top:.5rem;font-size:.7rem;color:var(--text-dim);font-style:italic}
+
+/* ─── PLAYERS GRID ──────────────────────── */
+.players-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:.8rem}
+
+/* ─── PLAYER CARD ───────────────────────── */
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative}
+.player-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--fc,#888)}
+.card-header{padding:.72rem 1rem .58rem;border-bottom:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between}
+.card-faction{font-family:'Cinzel',serif;font-size:.86rem;color:var(--fc);letter-spacing:.05em}
+.card-player{font-size:.74rem;color:var(--text-dim);font-style:italic}
+.card-body{padding:.72rem 1rem;display:flex;flex-direction:column;gap:.68rem}
+
+/* ─── STAT ROW ──────────────────────────── */
+.srow{display:flex;align-items:center;gap:.6rem}
+.stat-lbl{font-family:'Cinzel',serif;font-size:.57rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;width:70px;flex-shrink:0}
+.sctrl{display:flex;align-items:center;gap:.38rem;flex:1}
+.sbtn{width:26px;height:26px;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-size:1rem;cursor:pointer;border-radius:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1}
+.sbtn:hover{border-color:var(--fc);color:var(--fc)}
+.sbtn:active{transform:scale(.9)}
+.sval{font-family:'Cinzel',serif;font-size:1.28rem;color:var(--text);min-width:1.9rem;text-align:center;font-weight:600}
+.sval.sc{color:var(--fc)}
+.sval.sw{color:#c07830}
+.sval.sd{color:var(--red)}
+
+/* ─── FAVOUR ────────────────────────────── */
+.frow{display:flex;align-items:center;gap:.6rem}
+.fdisc{width:46px;height:46px;border-radius:50%;border:2px solid var(--border);background:radial-gradient(circle at 40% 35%,#1e1a0a,#0e0c06);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;flex-shrink:0;font-family:'Cinzel',serif}
+.fdisc.held{border-color:var(--gold);background:radial-gradient(circle at 40% 35%,#38280e,#1a1406);box-shadow:0 0 14px rgba(201,168,76,.3);animation:discPulse 2.5s ease-in-out infinite;color:var(--gold);font-size:.92rem;font-weight:700}
+.fdisc:not(.held){color:var(--text-dim);font-size:.56rem;text-align:center;line-height:1.2}
+.fdisc:hover{border-color:var(--gold-dim)}
+.finfo{flex:1}
+.fin-lbl{font-family:'Cinzel',serif;font-size:.57rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;display:block;margin-bottom:.13rem}
+.fin-hint{font-size:.72rem;color:var(--text-dim);font-style:italic;line-height:1.3}
+.fuse{width:26px;height:26px;background:transparent;border:1px solid var(--gold-dim);color:var(--gold-dim);cursor:pointer;border-radius:2px;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.fuse:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ─── TACTICS ───────────────────────────── */
+.tarea-lbl{font-family:'Cinzel',serif;font-size:.57rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;margin-bottom:.42rem}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:.3rem}
+.ttile{border:1px solid var(--border);border-radius:2px;cursor:pointer;overflow:hidden;transition:opacity .2s;user-select:none}
+.ttile:hover{opacity:.82}
+.ttile:active{transform:scale(.97)}
+.ttile.t-ready{border-color:var(--fc)}
+.ttile.t-exhausted{border-color:#3a3020}
+.ttile.t-burned{border-color:#2a1a10}
+
+/* tactic image wrap */
+.timgw{position:relative;height:auto;overflow:hidden;background:#0e0c08;display:block}
+.timgw img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .3s}
+.ttile.t-ready    .timgw img{filter:none;opacity:1}
+.ttile.t-exhausted .timgw img{filter:grayscale(1) brightness(.5);opacity:.8}
+.ttile.t-burned   .timgw img{filter:grayscale(1) brightness(.18);opacity:.7}
+
+/* no-image fallback */
+.timgw.no-img{display:flex;align-items:center;justify-content:center;padding:.35rem}
+.timgw.no-img img{display:none}
+.tfname{display:none;text-align:center;font-size:.67rem;color:var(--text-dim);line-height:1.3;font-style:italic}
+.timgw.no-img .tfname{display:block}
+
+/* burned X */
+.tburnx{display:none;position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.45);font-size:1.5rem;color:rgba(190,50,30,.88);pointer-events:none}
+.ttile.t-burned .tburnx{display:flex}
+
+.tfoot{padding:.26rem .38rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3)}
+.tname{font-size:.64rem;color:var(--text);line-height:1.2;font-weight:600;flex:1}
+.ttile.t-exhausted .tname{color:var(--text-dim)}
+.ttile.t-burned    .tname{color:#4a3820}
+.tbadge{font-family:'Cinzel',serif;font-size:.46rem;letter-spacing:.07em;flex-shrink:0;padding:.08rem .26rem;border-radius:2px;margin-left:.22rem}
+.ttile.t-ready     .tbadge{color:var(--fc);border:1px solid var(--fc)}
+.ttile.t-exhausted .tbadge{color:#5a5040;border:1px solid #3a3020}
+.ttile.t-burned    .tbadge{color:#7a3020;border:1px solid #5a2010}
+
+/* ─── ANIMATIONS ────────────────────────── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes discPulse{0%,100%{box-shadow:0 0 14px rgba(201,168,76,.25)}50%{box-shadow:0 0 26px rgba(201,168,76,.5)}}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@media(max-width:500px){.section-row{grid-template-columns:1fr}.timgw{height:50px}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SETUP SCREEN
+════════════════════════════════════════════ -->
+<div id="setup-screen">
+  <div class="crown-title">
+    <h1>THE OLD KING'S CROWN</h1>
+    <p>Companion Tracker</p>
+  </div>
+  <div class="divider-line"></div>
+  <div class="setup-card">
+    <div class="slabel">Number of Players</div>
+    <div class="btn-group" id="count-btns"></div>
+
+    <div class="slabel">Game Length</div>
+    <div class="btn-group" id="rounds-btns"></div>
+
+    <div class="slabel">Faction Assignment</div>
+    <div class="player-setup-list" id="faction-list"></div>
+
+    <button class="start-btn" onclick="startGame()">⚔ Begin the Conflict</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN
+════════════════════════════════════════════ -->
+<div id="game-screen">
+  <div class="game-header">
+    <h2>THE OLD KING'S CROWN</h2>
+    <button class="newgame-btn" onclick="resetGame()">↩ New Game</button>
+  </div>
+  <div class="game-body">
+    <div id="track-bar" class="track-bar"></div>
+    <div class="section-row">
+      <div class="info-sec" id="turn-order-sec"></div>
+      <div class="info-sec" id="clash-sec"></div>
+    </div>
+    <div class="players-grid" id="players-grid"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════════════
+const FACTIONS = {
+  nobility:  { label:'The Nobility',  color:'#4a7ab5', tactics:['School of the Stones','Royal Seal','Witch Trial','Martial Law'] },
+  gathering: { label:'The Gathering', color:'#8b5cba', tactics:['School of the Stars','Out Beyond the Lights','Moonlit Foragers','Ritual Sacrifice'] },
+  clans:     { label:'The Clans',     color:'#4a9e6a', tactics:['School of the Storms','Sea Lanes','Salt Toughness','River Runner'] },
+  uprising:  { label:'The Uprising',  color:'#c04a3a', tactics:['School of the Streets','False Orders','Safe Houses','Night Raids'] },
+};
+const FK = Object.keys(FACTIONS);
+
+const PHASES       = ['Spring','Summer','Autumn','Winter'];
+const PHASE_ICONS  = ['🌸','☀️','🍂','❄️'];
+const PHASE_CLS    = ['pp-spring','pp-summer','pp-autumn','pp-winter'];
+const REGIONS      = ['Highlands','Plateau','Lowlands'];
+const T_STATE_LBL  = ['READY','EXHAUSTED','BURNED'];
+const T_STATE_CLS  = ['t-ready','t-exhausted','t-burned'];
+
+// ════════════════════════════════════════════════════
+// SETUP STATE
+// ════════════════════════════════════════════════════
+let SC = { count: 2, rounds: 5, factions: [...FK] };
+
+function initSetup() {
+  SC = { count: 2, rounds: 5, factions: [...FK] };
+  renderSetup();
+}
+
+function renderSetup() {
+  // Player count buttons
+  document.getElementById('count-btns').innerHTML =
+    [1,2,3,4].map(n =>
+      `<button class="tbtn ${n===SC.count?'active':''}" onclick="setCount(${n})">${n}</button>`
+    ).join('');
+
+  // Round length buttons
+  [[4,'Short (4)'],[5,'Standard (5)'],[6,'Extended (6)']].forEach(([n,l]) => {});
+  document.getElementById('rounds-btns').innerHTML =
+    [[4,'Short (4)'],[5,'Standard (5)'],[6,'Extended (6)']].map(([n,l]) =>
+      `<button class="tbtn ${n===SC.rounds?'active':''}" onclick="setRounds(${n})">${l}</button>`
+    ).join('');
+
+  // Faction selects (with exclusivity)
+  const list = document.getElementById('faction-list');
+  list.innerHTML = '';
+  for (let i = 0; i < SC.count; i++) {
+    // factions already picked by OTHER players
+    const taken = SC.factions.filter((f, j) => j !== i && j < SC.count);
+    const available = FK.filter(k => !taken.includes(k));
+    // fix invalid selection
+    if (!available.includes(SC.factions[i])) SC.factions[i] = available[0];
+    const opts = available.map(k =>
+      `<option value="${k}" ${k===SC.factions[i]?'selected':''}>${FACTIONS[k].label}</option>`
+    ).join('');
+    const row = document.createElement('div');
+    row.className = 'player-setup-row';
+    row.innerHTML = `<span class="pnum-label">Player ${i+1}</span><select class="faction-select" onchange="onFactionChange(${i},this.value)">${opts}</select>`;
+    list.appendChild(row);
+  }
+}
+
+function setCount(n)             { SC.count = n; renderSetup(); }
+function setRounds(n)            { SC.rounds = n; renderSetup(); }
+function onFactionChange(i, val) { SC.factions[i] = val; renderSetup(); }
+
+// ════════════════════════════════════════════════════
+// GAME STATE
+// ════════════════════════════════════════════════════
+let G = null;
+
+function startGame() {
+  G = {
+    players: [],
+    round: 1,
+    maxRounds: SC.rounds,
+    phase: 0,            // 0=Spring … 3=Winter
+    turnOrder: [],       // array of player indices
+    clashOrder: [0,1,2], // REGIONS indices in battle order
+  };
+  for (let i = 0; i < SC.count; i++) {
+    G.players.push({ id:i, faction:SC.factions[i], influence:0, lore:0, handSize:6,
+                     tactics:[0,0,0,0], favourCharges:0 });
+    G.turnOrder.push(i);
+  }
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display  = 'block';
+  renderAll();
+}
+
+function resetGame() {
+  document.getElementById('game-screen').style.display  = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+  initSetup();
+}
+
+// ════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════
+function renderAll() {
+  renderTrackBar();
+  renderTurnOrder();
+  renderClash();
+  renderPlayers();
+}
+
+/* ── TRACK BAR ── */
+function renderTrackBar() {
+  const isLast = G.round === G.maxRounds && G.phase === 3;
+
+  const pills = PHASES.map((p, i) =>
+    `<span class="ppill ${i===G.phase ? PHASE_CLS[i] : ''}" onclick="setPhase(${i})">${PHASE_ICONS[i]} ${p}</span>`
+  ).join('');
+
+  document.getElementById('track-bar').innerHTML = `
+    <div class="tblock">
+      <div class="track-lbl">Round</div>
+      <div class="tcontrols">
+        <button class="tnav" onclick="changeRound(-1)" ${G.round<=1?'disabled':''}>‹</button>
+        <span class="tval">${G.round} / ${G.maxRounds}</span>
+        <button class="tnav" onclick="changeRound(1)" ${G.round>=G.maxRounds?'disabled':''}>›</button>
+      </div>
+    </div>
+    <div class="tsep"></div>
+    <div class="tblock">
+      <div class="track-lbl">Phase</div>
+      <div class="phase-pills">${pills}</div>
+    </div>
+    ${isLast ? '<span class="end-msg">⚔ Final round complete</span>' : ''}
+  `;
+}
+
+function changeRound(dir) {
+  G.round = Math.max(1, Math.min(G.maxRounds, G.round + dir));
+  renderAll();
+}
+function setPhase(i) { G.phase = i; renderAll(); }
+
+/* ── TURN ORDER ── */
+function renderTurnOrder() {
+  const items = G.turnOrder.map((pi, pos) => {
+    const p = G.players[pi];
+    const f = FACTIONS[p.faction];
+    return `
+      <div class="to-item">
+        <span class="to-pos">${pos+1}${ord(pos+1)}</span>
+        <span class="to-name" style="color:${f.color}">
+          ${f.label}
+          <span class="to-sub">· P${pi+1} · ${p.influence}i</span>
+        </span>
+        <div class="to-btns">
+          <button class="ibtn" onclick="moveOrder(${pos},-1)" ${pos===0?'disabled':''}>↑</button>
+          <button class="ibtn" onclick="moveOrder(${pos},1)"  ${pos===G.turnOrder.length-1?'disabled':''}>↓</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // next-round projection: sort by influence desc
+  const proj = [...G.turnOrder].sort((a,b) => G.players[b].influence - G.players[a].influence);
+  const projHTML = proj.map(pi =>
+    `<span style="color:${FACTIONS[G.players[pi].faction].color}">${FACTIONS[G.players[pi].faction].label.replace('The ','')}</span>`
+  ).join(' → ');
+
+  // last player sets clash markers
+  const lastPi  = G.turnOrder[G.turnOrder.length - 1];
+  const lastFac  = lastPi !== undefined ? FACTIONS[G.players[lastPi].faction] : null;
+
+  document.getElementById('turn-order-sec').innerHTML = `
+    <div class="isec-title">
+      Turn Order
+      ${lastFac ? `<span class="isec-sub">Clash set by P${lastPi+1}</span>` : ''}
+    </div>
+    <div class="to-list">${items}</div>
+    <div class="next-order-preview">
+      <div class="next-order-label">Next Round (by Influence)</div>
+      <div style="margin-top:.18rem">${projHTML}</div>
+    </div>
+    <button class="apply-btn" onclick="applyInfluenceOrder()">↕ Apply Influence Order</button>
+  `;
+}
+
+function moveOrder(pos, dir) {
+  const np = pos + dir;
+  if (np < 0 || np >= G.turnOrder.length) return;
+  [G.turnOrder[pos], G.turnOrder[np]] = [G.turnOrder[np], G.turnOrder[pos]];
+  renderAll();
+}
+function applyInfluenceOrder() {
+  G.turnOrder.sort((a,b) => G.players[b].influence - G.players[a].influence);
+  renderAll();
+}
+
+/* ── CLASH REGIONS ── */
+function renderClash() {
+  const isSummer = G.phase === 1;
+  const items = G.clashOrder.map((ri, pos) => `
+    <div class="clash-item ${isSummer?'summer-hi':''}">
+      <div class="clash-badge">${pos+1}</div>
+      <span class="clash-rname">${REGIONS[ri]}</span>
+      <div class="to-btns">
+        <button class="ibtn" onclick="moveClash(${pos},-1)" ${pos===0?'disabled':''}>↑</button>
+        <button class="ibtn" onclick="moveClash(${pos},1)"  ${pos===2?'disabled':''}>↓</button>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('clash-sec').innerHTML = `
+    <div class="isec-title">
+      Clash Order ${isSummer?'☀️':''}
+      <span class="isec-sub">Summer Regions</span>
+    </div>
+    <div class="clash-list">${items}</div>
+    <div class="clash-note">${isSummer ? '⚔ Clashes active — resolve in order' : 'Adjust before Summer begins'}</div>
+  `;
+}
+
+function moveClash(pos, dir) {
+  const np = pos + dir;
+  if (np < 0 || np > 2) return;
+  [G.clashOrder[pos], G.clashOrder[np]] = [G.clashOrder[np], G.clashOrder[pos]];
+  renderAll();
+}
+
+/* ── PLAYER CARDS ── */
+function renderPlayers() {
+  const grid = document.getElementById('players-grid');
+  grid.innerHTML = '';
+
+  G.players.forEach((p, pi) => {
+    const f = FACTIONS[p.faction];
+    const hasFavour = p.favourCharges > 0;
+    const chargeLabel = hasFavour ? ['I','II','III'][p.favourCharges - 1] : '—';
+    const handCls = p.handSize <= 2 ? 'sd' : p.handSize <= 4 ? 'sw' : '';
+
+    const tacticsHTML = f.tactics.map((name, ti) => {
+      const s = p.tactics[ti];
+      const src = `images/${p.faction}-tactic-${ti+1}.png`;
+      return `
+        <div class="ttile ${T_STATE_CLS[s]}" onclick="cycleTactic(${pi},${ti})" title="Click to cycle state">
+          <div class="timgw" id="tw-${pi}-${ti}">
+            <img src="${src}" alt="${name}"
+                 onerror="var w=document.getElementById('tw-${pi}-${ti}');w.classList.add('no-img')">
+            <div class="tfname">${name}</div>
+            <div class="tburnx">✕</div>
+          </div>
+          <div class="tfoot">
+            <span class="tname">${name}</span>
+            <span class="tbadge">${T_STATE_LBL[s]}</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.style.setProperty('--fc', f.color);
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="card-faction">${f.label}</span>
+        <span class="card-player">Player ${pi+1}</span>
+      </div>
+      <div class="card-body">
+
+        <div class="srow">
+          <span class="stat-lbl">Influence</span>
+          <div class="sctrl">
+            <button class="sbtn" onclick="adj(${pi},'influence',-1)">−</button>
+            <span class="sval sc">${p.influence}</span>
+            <button class="sbtn" onclick="adj(${pi},'influence',1)">+</button>
+          </div>
+        </div>
+
+        <div class="srow">
+          <span class="stat-lbl">Lore</span>
+          <div class="sctrl">
+            <button class="sbtn" onclick="adj(${pi},'lore',-1)">−</button>
+            <span class="sval">${p.lore}</span>
+            <button class="sbtn" onclick="adj(${pi},'lore',1)">+</button>
+          </div>
+        </div>
+
+        <div class="srow">
+          <span class="stat-lbl">Hand Size</span>
+          <div class="sctrl">
+            <button class="sbtn" onclick="adj(${pi},'handSize',-1)">−</button>
+            <span class="sval ${handCls}">${p.handSize}</span>
+            <button class="sbtn" onclick="adj(${pi},'handSize',1)">+</button>
+          </div>
+        </div>
+
+        <div class="frow">
+          <div class="fdisc ${hasFavour?'held':''}" onclick="toggleFavour(${pi})"
+               title="${hasFavour?'Click disc to release':'Click to claim Favour'}">${chargeLabel}</div>
+          <div class="finfo">
+            <span class="fin-lbl">Kingdom's Favour</span>
+            <span class="fin-hint">${hasFavour
+              ? p.favourCharges+' charge'+(p.favourCharges>1?'s':'')+' remaining'
+              : 'Claim by winning Harvest Field'}</span>
+          </div>
+          ${hasFavour ? `<button class="fuse" onclick="useFavour(${pi})" title="Use a charge">↻</button>` : ''}
+        </div>
+
+        <div>
+          <div class="tarea-lbl">Tactic Tiles</div>
+          <div class="tgrid">${tacticsHTML}</div>
+        </div>
+
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ════════════════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════════════════
+function adj(pi, key, delta) {
+  const p = G.players[pi];
+  if (key === 'handSize')  p.handSize  = Math.max(0, p.handSize  + delta);
+  if (key === 'influence') p.influence = Math.max(0, p.influence + delta);
+  if (key === 'lore')      p.lore      = Math.max(0, p.lore      + delta);
+  renderAll();
+}
+
+function cycleTactic(pi, ti) {
+  G.players[pi].tactics[ti] = (G.players[pi].tactics[ti] + 1) % 3;
+  renderAll();
+}
+
+function toggleFavour(pi) {
+  if (G.players[pi].favourCharges > 0) {
+    G.players[pi].favourCharges = 0; // release / stolen
+  } else {
+    G.players.forEach(p => p.favourCharges = 0); // steal from current holder
+    G.players[pi].favourCharges = 3;
+  }
+  renderAll();
+}
+
+function useFavour(pi) {
+  if (G.players[pi].favourCharges > 0) G.players[pi].favourCharges--;
+  renderAll();
+}
+
+// ════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════
+function ord(n) {
+  if (n===1) return 'st'; if (n===2) return 'nd'; if (n===3) return 'rd'; return 'th';
+}
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+initSetup();
+</script>
+</body>
+</html>
